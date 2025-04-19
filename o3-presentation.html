@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テクノロジートレンド調査：OpenAI o3の最新技術動向と活用の展望</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.37/vue.global.prod.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <style>
+        :root {
+            --main-color: #2563eb;
+            --accent-color1: #10b981;
+            --accent-color2: #8b5cf6;
+            --base-color: #f8fafc;
+            --text-color: #1e293b;
+            --dark-bg-color: #0f172a;
+            --dark-text-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--base-color);
+            color: var(--text-color);
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg-color);
+            color: var(--dark-text-color);
+        }
+
+        .slide-container {
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
+            opacity: 0;
+            z-index: 1;
+            transition: opacity 0.5s;
+        }
+
+        .slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+
+        .slide-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--main-color);
+        }
+
+        .dark-mode .slide-title {
+            color: #3b82f6;
+        }
+
+        .slide-content {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .slide-content ul {
+            list-style-type: none;
+            padding-left: 1rem;
+        }
+
+        .slide-content li {
+            margin-bottom: 1rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+
+        .slide-content li:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.6rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            background-color: var(--accent-color1);
+            border-radius: 50%;
+        }
+
+        .dark-mode .slide-content li:before {
+            background-color: #34d399;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--accent-color2);
+        }
+
+        .progress-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background-color: rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color1);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .dark-mode .progress-bar {
+            background-color: var(--accent-color2);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 10;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        /* 視覚要素のスタイル */
+        .network-visualization {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .timeline {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .timeline-year {
+            font-weight: bold;
+            min-width: 5rem;
+        }
+
+        .timeline-content {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-content:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 1rem;
+            height: 1px;
+            background-color: var(--text-color);
+        }
+
+        .matrix {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .matrix-item {
+            background-color: rgba(37, 99, 235, 0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s;
+        }
+
+        .dark-mode .matrix-item {
+            background-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .matrix-item:hover {
+            background-color: rgba(37, 99, 235, 0.2);
+        }
+
+        .dark-mode .matrix-item:hover {
+            background-color: rgba(59, 130, 246, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .slide-title {
+                font-size: 1.8rem;
+            }
+
+            .slide-content {
+                font-size: 1.2rem;
+            }
+
+            .matrix {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* アニメーション最適化 */
+        .slide {
+            will-change: transform, opacity;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="slide-container">
+            <!-- スライド1: タイトルスライド -->
+            <div :class="['slide', currentSlide === 0 ? 'active' : '']">
+                <div class="slide-content text-center">
+                    <h1 class="slide-title text-4xl md:text-6xl mb-8">テクノロジートレンド調査</h1>
+                    <h2 class="text-2xl md:text-4xl mb-12">OpenAI o3（GPT-03）の最新技術動向と活用の展望</h2>
+                    <p class="text-xl md:text-2xl mb-16">2025年4月</p>
+                </div>
+            </div>
+
+            <!-- スライド2: 調査概要 -->
+            <div :class="['slide', currentSlide === 1 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">調査概要</h2>
+                    <p class="mb-6">OpenAI o3は、AIの推論能力に革命をもたらす技術として2025年4月16日に発表された最新フラッグシップモデルです。</p>
+                    <ul>
+                        <li>従来のGPTシリーズとは一線を画した新世代のAIモデル</li>
+                        <li>人間のような「考える過程」を取り入れた段階的推論アプローチ</li>
+                        <li>数学、プログラミング、科学分野で卓越した性能を発揮</li>
+                        <li>AGI（汎用人工知能）実現への重要なマイルストーン</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド3: 背景と必要性 -->
+            <div :class="['slide', currentSlide === 2 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">背景と必要性</h2>
+                    <p class="mb-6">大規模言語モデルの発展の歴史からみるo3の位置づけ</p>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-year">2018年</div>
+                            <div class="timeline-content">GPT（1.1億パラメータ）</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2019年</div>
+                            <div class="timeline-content">GPT-2（15億パラメータ）</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2020年</div>
+                            <div class="timeline-content">GPT-3（1,750億パラメータ）</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2022年</div>
+                            <div class="timeline-content">GPT-3.5（ChatGPTとして公開）</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2023年</div>
+                            <div class="timeline-content">GPT-4</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2024年</div>
+                            <div class="timeline-content">GPT-4o および o1シリーズ（初の推論特化型モデル）</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2025年4月</div>
+                            <div class="timeline-content">o3（最新の推論特化型フラッグシップモデル）</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- スライド4: トピック概観 -->
+            <div :class="['slide', currentSlide === 3 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">o3の基本コンセプト</h2>
+                    <p class="mb-6">OpenAI o3はAIに「考える時間」を与える革新的なアプローチを採用しています。</p>
+                    <ul>
+                        <li>「private chain of thought（非公開の思考連鎖）」という新概念を導入</li>
+                        <li>従来のAIモデルが一度に回答を生成するのに対し、段階的に推論を積み重ねる</li>
+                        <li>人間の思考プロセスに近いアプローチによる複雑な問題解決能力の向上</li>
+                        <li>テキストだけでなく、画像や図表などを含めたマルチモーダル推論が可能</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド5: 主要分野1の詳細 - 技術的基盤 -->
+            <div :class="['slide', currentSlide === 4 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">o3の技術的基盤</h2>
+                    <p class="mb-6">o3は次の基本原理と中核アルゴリズムで構成されています：</p>
+                    <div class="matrix">
+                        <div class="matrix-item">
+                            <h3 class="font-bold mb-2">段階的推論プロセス</h3>
+                            <p>複雑な問題に対して複数のステップを踏んで「考える」機能</p>
+                        </div>
+                        <div class="matrix-item">
+                            <h3 class="font-bold mb-2">非公開の思考連鎖</h3>
+                            <p>ユーザーには見えない内部プロセスで多段階の思考を展開</p>
+                        </div>
+                        <div class="matrix-item">
+                            <h3 class="font-bold mb-2">強化学習による思考獲得</h3>
+                            <p>強化学習手法を用いて「考える」能力を獲得</p>
+                        </div>
+                        <div class="matrix-item">
+                            <h3 class="font-bold mb-2">拡張Transformerアーキテクチャ</h3>
+                            <p>GPT-3をベースに、新たな推論機能を追加</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- スライド6: 主要分野2の詳細 - アーキテクチャと構成要素 -->
+            <div :class="['slide', currentSlide === 5 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">アーキテクチャと構成要素</h2>
+                    <ul>
+                        <li>推論モジュール：複雑な問題を解く際に自動的に推論ステップを組み立てる専用モジュール</li>
+                        <li>マルチモーダル処理システム：テキスト、画像、コードなど複数の形式のデータを統合的に処理</li>
+                        <li>ツール統合インターフェース：Web検索、コード実行、画像生成など外部ツールを自律的に活用</li>
+                        <li>セルフアテンション層：文脈理解のための強化された自己注意機構</li>
+                        <li>推論エンジン：複数ステップの推論プロセスを管理する中核エンジン</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド7: 主要分野3の詳細 - 性能と評価指標 -->
+            <div :class="['slide', currentSlide === 6 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">性能と評価指標</h2>
+                    <p class="mb-6">o3は複数のベンチマークで卓越した性能を示しています：</p>
+                    <ul>
+                        <li>ARC-AGI：人間の水準とされる85%を上回る87.5%の正答率を達成</li>
+                        <li>コーディング能力：SWE-bench Verifiedで71.7%の正確性、Codeforces ELOスコア2727に到達</li>
+                        <li>数学的能力：数学オリンピックレベルの試験「Amy」で96.7%の正確性を記録</li>
+                        <li>科学問題：PhDレベルの科学問題に対して87.7%の正答率</li>
+                        <li>効率性：o3-miniは、o1と同等の性能を維持しつつ、応答速度が24%向上（平均応答時間7.7秒）</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド8: 主要分野4の詳細 - 技術的優位性 -->
+            <div :class="['slide', currentSlide === 7 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">技術的優位性</h2>
+                    <p class="mb-6">o3はGPTシリーズと比較して以下の点で優位性を持っています：</p>
+                    <ul>
+                        <li>推論能力：GPT-4oなどと比較して、複雑な問題解決において大幅に高い性能</li>
+                        <li>思考プロセス：一度の計算で回答を出すのではなく、段階的に推論を積み重ねる</li>
+                        <li>ツール活用の自律性：必要なツールを自ら判断して活用できる能力</li>
+                        <li>高度な専門分野への対応：数学、プログラミング、科学分野での卓越した性能</li>
+                        <li>複雑な問題の分解能力：複雑な問題を段階的に分解して解決するアプローチ</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド9: 相互関連性 -->
+            <div :class="['slide', currentSlide === 8 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">相互関連性</h2>
+                    <p class="mb-6">o3と補完関係にある技術と競合技術</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 text-accent-color1">補完技術</h3>
+                            <ul>
+                                <li>特化型AIモデル：特定の領域に特化した小規模AIモデル</li>
+                                <li>外部ツール：Web検索エンジン、コード実行環境、データ分析ツールなど</li>
+                                <li>視覚情報処理技術：画像認識、コンピュータビジョン技術</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 text-accent-color2">競合技術</h3>
+                            <ul>
+                                <li>Google DeepMindの大規模言語モデル</li>
+                                <li>Anthropic Claudeシリーズ</li>
+                                <li>Meta AIの大規模言語モデル</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- スライド10: 発展の可能性 -->
+            <div :class="['slide', currentSlide === 9 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">発展の可能性</h2>
+                    <p class="mb-6">o3に関連する主な研究トレンドと将来の可能性：</p>
+                    <ul>
+                        <li>マルチステップ推論：複数ステップの推論プロセスをさらに洗練させる研究</li>
+                        <li>マルチモーダル統合：テキスト、画像、音声、動画などを統合的に扱う能力の向上</li>
+                        <li>ツール使用の自動化：より複雑なツール群を自律的に活用する能力の開発</li>
+                        <li>AGIへの接近：より汎用的な問題解決能力を持つAIへの発展</li>
+                        <li>専門知識の深化：特定分野における専門家レベルの知識と推論能力の獲得</li>
+                        <li>自己改善能力：自らの推論プロセスを評価し改善していく能力の獲得</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド11: 組み合わせ効果 -->
+            <div :class="['slide', currentSlide === 10 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">組み合わせ効果</h2>
+                    <p class="mb-6">o3と他技術の組み合わせによる相乗効果：</p>
+                    <div class="matrix">
+                        <div class="matrix-item">
+                            <h3 class="font-bold mb-2">o3 + 特化型モデル</h3>
+                            <p>汎用的な推論能力と特定分野の深い知識を組み合わせた専門家システム</p>
+                        </div>
+                        <div class="matrix-item">
+                            <h3 class="font-bold mb-2">o3 + IoTデバイス</h3>
+                            <p>物理世界のセンサーデータに基づいた高度な推論と意思決定</p>
+                        </div>
+                        <div class="matrix-item">
+                            <h3 class="font-bold mb-2">o3 + ロボティクス</h3>
+                            <p>物理的なタスクに対する段階的推論と計画能力を持つロボットシステム</p>
+                        </div>
+                        <div class="matrix-item">
+                            <h3 class="font-bold mb-2">o3 + データ分析プラットフォーム</h3>
+                            <p>複雑なデータセットに対する高度な分析と洞察の抽出</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- スライド12: 社会的影響 -->
+            <div :class="['slide', currentSlide === 11 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">社会的影響と産業別応用</h2>
+                    <p class="mb-6">o3は以下のような産業分野での応用が期待されています：</p>
+                    <ul>
+                        <li>研究開発：複雑な科学的問題の解決、新たな仮説の生成と検証</li>
+                        <li>ソフトウェア開発：高度なコード生成、バグの診断と修正、アルゴリズムの最適化</li>
+                        <li>教育：高度な学習支援、個別化された教材作成、問題解決プロセスの指導</li>
+                        <li>金融：複雑な市場分析、リスク評価、投資戦略の策定</li>
+                        <li>医療：診断支援、研究データの分析、治療法の提案</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド13: 調査方法 -->
+            <div :class="['slide', currentSlide === 12 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">調査方法</h2>
+                    <p class="mb-6">本調査は以下の方法で実施されました：</p>
+                    <ul>
+                        <li>公開情報の包括的分析：OpenAIの公式発表、技術記事、解説資料</li>
+                        <li>ベンチマーク結果の評価：複数の独立した評価機関によるパフォーマンステスト</li>
+                        <li>専門家の見解の統合：AIの推論技術に関する専門家の意見と分析</li>
+                        <li>関連技術の比較分析：GPTシリーズ、競合モデルとの性能比較</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド14: 期待される成果 -->
+            <div :class="['slide', currentSlide === 13 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">まとめと期待される成果</h2>
+                    <p class="mb-6">OpenAI o3は、AIの「考える」という概念を根本から変革する画期的なモデルです。</p>
+                    <ul>
+                        <li>人間の思考プロセスに近い段階的な推論能力の実装により、複雑な問題解決において従来のAIモデルを大きく上回る性能を実現</li>
+                        <li>特に数学、プログラミング、科学分野において卓越した能力を発揮</li>
+                        <li>AGI（汎用人工知能）の実現に向けた重要なマイルストーン</li>
+                        <li>研究開発、教育、ソフトウェア開発など多くの分野で革新をもたらす可能性</li>
+                        <li>より効率的で透明性の高い推論プロセスの実現により、人間とAIの協働における新たな可能性の創出</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- スライド15: Q&Aセッション -->
+            <div :class="['slide', currentSlide === 14 ? 'active' : '']">
+                <div class="slide-content">
+                    <h2 class="slide-title">Q&Aセッション</h2>
+                    <p class="mb-8 text-center text-2xl">ご質問をお待ちしています</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-opacity-10 bg-main-color p-6 rounded-lg">
+                            <h3 class="font-bold mb-2">Q: o3は一般ユーザーも利用できますか？</h3>
+                            <p>A: 現時点では詳細な利用条件は公開されていませんが、段階的に一般提供される予定です。</p>
+                        </div>
+                        <div class="bg-opacity-10 bg-main-color p-6 rounded-lg">
+                            <h3 class="font-bold mb-2">Q: o3の推論時間はどれくらいですか？</h3>
+                            <p>A: 複雑な問題では複数ステップの推論を行うため、従来モデルより応答時間が長くなる場合があります。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ナビゲーション -->
+        <div class="navigation">
+            <button class="nav-btn prev-btn" @click="prevSlide">←</button>
+            <button class="nav-btn next-btn" @click="nextSlide">→</button>
+        </div>
+
+        <!-- プログレスバー -->
+        <div class="progress-container">
+            <div class="progress-bar" :style="{ width: (currentSlide / (totalSlides - 1)) * 100 + '%' }"></div>
+        </div>
+
+        <!-- テーマ切り替えボタン -->
+        <button class="theme-toggle" @click="toggleDarkMode">
+            <span v-if="darkMode">☀️</span>
+            <span v-else>🌙</span>
+        </button>
+    </div>
+
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    currentSlide: 0,
+                    totalSlides: 15,
+                    darkMode: false,
+                    networkNodes: [],
+                    networkLinks: []
+                }
+            },
+            methods: {
+                nextSlide() {
+                    if (this.currentSlide < this.totalSlides - 1) {
+                        this.currentSlide++;
+                        this.updateProgressBar();
+                    }
+                },
+                prevSlide() {
+                    if (this.currentSlide > 0) {
+                        this.currentSlide--;
+                        this.updateProgressBar();
+                    }
+                },
+                updateProgressBar() {
+                    const progress = (this.currentSlide / (this.totalSlides - 1)) * 100;
+                    document.querySelector('.progress-bar').style.width = progress + '%';
+                },
+                toggleDarkMode() {
+                    this.darkMode = !this.darkMode;
+                    document.body.classList.toggle('dark-mode', this.darkMode);
+                },
+                handleKeyDown(e) {
+                    if (e.key === 'ArrowRight') {
+                        this.nextSlide();
+                    } else if (e.key === 'ArrowLeft') {
+                        this.prevSlide();
+                    } else if (e.key === 'F11') {
+                        // F11キーはブラウザの全画面表示のため、追加の処理は不要
+                    }
+                },
+                generateNetworkVisualization() {
+                    try {
+                        const container = document.createElement('div');
+                        container.className = 'network-visualization';
+                        document.querySelector('.slide-container').appendChild(container);
+
+                        // ネットワークノードの生成とアニメーション
+                        const nodeCount = 50;
+                        const width = window.innerWidth;
+                        const height = window.innerHeight;
+
+                        for (let i = 0; i < nodeCount; i++) {
+                            const node = document.createElement('div');
+                            node.style.position = 'absolute';
+                            node.style.width = '4px';
+                            node.style.height = '4px';
+                            node.style.borderRadius = '50%';
+                            node.style.backgroundColor = this.getRandomColor();
+                            node.style.left = Math.random() * width + 'px';
+                            node.style.top = Math.random() * height + 'px';
+                            
+                            container.appendChild(node);
+                            this.networkNodes.push({
+                                element: node,
+                                x: parseFloat(node.style.left),
+                                y: parseFloat(node.style.top),
+                                vx: (Math.random() - 0.5) * 0.5,
+                                vy: (Math.random() - 0.5) * 0.5
+                            });
+                        }
+
+                        // ノード間のリンク（接続線）を生成
+                        for (let i = 0; i < nodeCount; i++) {
+                            for (let j = i + 1; j < nodeCount; j++) {
+                                if (Math.random() > 0.95) {
+                                    const line = document.createElement('div');
+                                    line.style.position = 'absolute';
+                                    line.style.backgroundColor = 'rgba(150, 150, 150, 0.2)';
+                                    line.style.height = '1px';
+                                    line.style.transformOrigin = 'left center';
+                                    
+                                    container.appendChild(line);
+                                    this.networkLinks.push({
+                                        element: line,
+                                        source: i,
+                                        target: j
+                                    });
+                                }
+                            }
+                        }
+
+                        // アニメーションを開始
+                        this.animateNetwork();
+                    } catch (e) {
+                        console.error('Error generating network visualization:', e);
+                    }
+                },
+                animateNetwork() {
+                    const animate = () => {
+                        // ノードの位置を更新
+                        for (let i = 0; i < this.networkNodes.length; i++) {
+                            const node = this.networkNodes[i];
+                            node.x += node.vx;
+                            node.y += node.vy;
+                            
+                            // 画面端での反射
+                            if (node.x < 0 || node.x > window.innerWidth) node.vx *= -1;
+                            if (node.y < 0 || node.y > window.innerHeight) node.vy *= -1;
+                            
+                            node.element.style.left = node.x + 'px';
+                            node.element.style.top = node.y + 'px';
+                        }
+                        
+                        // リンク（接続線）の位置と角度を更新
+                        for (let i = 0; i < this.networkLinks.length; i++) {
+                            const link = this.networkLinks[i];
+                            const sourceNode = this.networkNodes[link.source];
+                            const targetNode = this.networkNodes[link.target];
+                            
+                            const dx = targetNode.x - sourceNode.x;
+                            const dy = targetNode.y - sourceNode.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                            
+                            link.element.style.width = distance + 'px';
+                            link.element.style.left = sourceNode.x + 'px';
+                            link.element.style.top = sourceNode.y + 'px';
+                            link.element.style.transform = `rotate(${angle}deg)`;
+                        }
+                        
+                        requestAnimationFrame(animate);
+                    };
+                    
+                    requestAnimationFrame(animate);
+                },
+                getRandomColor() {
+                    const colors = [
+                        'rgba(37, 99, 235, 0.5)', // main-color
+                        'rgba(16, 185, 129, 0.5)', // accent-color1
+                        'rgba(139, 92, 246, 0.5)'  // accent-color2
+                    ];
+                    return colors[Math.floor(Math.random() * colors.length)];
+                }
+            },
+            mounted() {
+                // キーボードイベントリスナーを追加
+                window.addEventListener('keydown', this.handleKeyDown);
+                
+                // ネットワーク可視化を生成
+                this.$nextTick(() => {
+                    try {
+                        this.generateNetworkVisualization();
+                    } catch (e) {
+                        console.error('Error in visualization:', e);
+                    }
+                });
+                
+                // スワイプ検出（モバイル用）
+                let touchStartX = 0;
+                let touchEndX = 0;
+                
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                });
+                
+                document.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                });
+                
+                const handleSwipe = () => {
+                    if (touchEndX < touchStartX - 50) {
+                        this.nextSlide();
+                    } else if (touchEndX > touchStartX + 50) {
+                        this.prevSlide();
+                    }
+                };
+            },
+            beforeUnmount() {
+                // イベントリスナーを削除
+                window.removeEventListener('keydown', this.handleKeyDown);
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
